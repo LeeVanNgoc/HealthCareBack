@@ -5,50 +5,52 @@ import bcrypt from 'bcryptjs';
 const salt = bcrypt.genSaltSync(10);
 
 let hashUserPassword = async (password: string) => {
-  try {
-    let hashPassword = await bcrypt.hash(password, salt);
-    return hashPassword;
-  } catch (error) {
-    throw new Error('Hashing failed');
-  }
+  return new Promise (async (resolve, reject) => {
+    try {
+      let hashPassword = await bcrypt.hash(password, salt);
+      resolve(hashPassword);
+    } catch (error) {
+      reject(error)
+    }
+    })
 }
 
 const createDoctor = async (data: any) => {
-  try {
-    console.log('Received data:', data);
-    const existingDoctor = await Doctor.findOne({ where: { email: data.email } });
+  return new Promise (async (resolve, reject) => {
+    try {
+      console.log('Received data:', data);
+      const existingDoctor = await Doctor.findOne({ where: { email: data.email } });
 
-    if (existingDoctor) {
-      throw new Error('Email already exists');
-    } else {
-      const hashPassword = await hashUserPassword(data.password);
-      const newUser = await Doctor.create({
-        email: data.email,
-        name: data.name,
-        address: data.address,
-        password: hashPassword,
-        phonenumber: data.phonenumber,
-        image: data.image,
-        evuluate: data.evuluate,
-      });
-      return newUser;
+      if (existingDoctor) {
+        resolve('Email already exists');
+      } else {
+        const hashPassword = await hashUserPassword(data.password);
+        const newDoctor = await Doctor.create({
+          email: data.email,
+          name: data.name,
+          address: data.address,
+          password: hashPassword,
+          phonenumber: data.phonenumber,
+          image: data.image,
+          evuluate: data.evuluate,
+        });
+        resolve(newDoctor);
+      }
+    } catch (error) {
+      reject(error);
     }
-  } catch (error) {
-    console.error('Error creating user:', error);
-    throw error;
-  }
+  })
 };
 
 const handleCreateDoctor = async (req: Request, res: Response) => {
   const data = req.body;
-
-  try {
-    const newUser = await createDoctor(data);
-    res.status(201).json({ message: 'Doctor created successfully', user: newUser });
-  } catch (error) {
-    console.error('Error handling create doctor request:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
+    try {
+      const newDoctor = await createDoctor(data);
+      res.status(201).json({ message: 'Doctor created successfully', user: newDoctor });
+    } catch (error) {
+      console.error('Error handling create doctor request:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
 }
 
 const deletedoctor = (doctorEmail : string) => {
@@ -135,7 +137,7 @@ const getAllDoctorsById = (doctorId: string | number) => {
     try {
       if (doctorId === 'ALL') {
         doctors = await Doctor.findAll({
-          attributes: ['email', 'name', 'phonenumber', 'address', 'evuluate'],
+          attributes: ['email', 'name', 'phonenumber', 'image', 'evuluate'],
           raw: true
         });
       } else if (doctorId && doctorId !== 'ALL') {
@@ -143,7 +145,7 @@ const getAllDoctorsById = (doctorId: string | number) => {
           where: {
             id: doctorId,
           },
-          attributes: ['email', 'name', 'phonenumber', 'address', 'evuluate'],
+          attributes: ['email', 'name', 'phonenumber', 'image', 'evuluate'],
           raw: true,
         });
         if (doctor) {
