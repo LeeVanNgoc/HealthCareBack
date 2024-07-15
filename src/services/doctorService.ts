@@ -1,5 +1,5 @@
-import { Request, Response } from 'express';
-import Doctor from '../../models/doctor';
+
+import Doctor from '../models/doctor';
 import bcrypt from 'bcryptjs';
 
 const salt = bcrypt.genSaltSync(10);
@@ -15,7 +15,7 @@ let hashUserPassword = async (password: string) => {
     })
 }
 
-const createDoctor = async (data: any) => {
+export const createDoctor = async (data: any) => {
   return new Promise (async (resolve, reject) => {
     try {
       console.log('Received data:', data);
@@ -42,18 +42,9 @@ const createDoctor = async (data: any) => {
   })
 };
 
-const handleCreateDoctor = async (req: Request, res: Response) => {
-  const data = req.body;
-    try {
-      const newDoctor = await createDoctor(data);
-      res.status(201).json({ message: 'Doctor created successfully', user: newDoctor });
-    } catch (error) {
-      console.error('Error handling create doctor request:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
-    }
-}
 
-const deletedoctor = (doctorEmail : string) => {
+
+export const deletedoctor = (doctorEmail : string) => {
   return new Promise (async (resolve, reject) => {
     try {
       const doctor = await Doctor.findOne({
@@ -79,17 +70,9 @@ const deletedoctor = (doctorEmail : string) => {
   })
 };
 
-const handleDeleteDoctor = async (req: Request, res: Response) => {
-  const doctorEmail = req.query.email as string;
-  try {
-    await deletedoctor(doctorEmail);
-  } catch (error) {
-    console.error('Error handling delete doctor request:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-}
 
-const editDoctor = async (data: any) => {
+
+export const editDoctor = async (data: any) => {
   return new Promise(async (resolve, reject) => {
     const id = data.id;
     try {
@@ -117,20 +100,9 @@ const editDoctor = async (data: any) => {
   });
 };
 
-const handleEditDoctor = async (req: Request, res: Response) => {
-  const data = req.body  ;
-  try {
-    const result: any = await editDoctor(data);
-    if (result.error) {
-      return res.status(404).json({ error: result.error });
-    }
-    res.status(200).json({ message: result.message, Doctor: result.Doctor });
-  } catch (error) {
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-}
 
-const getAllDoctorsById = (doctorId: string | number) => {
+
+export const getAllDoctorsById = (doctorId: string | number) => {
   return new Promise(async (resolve, reject) => {
     let doctors: any[] = []; // Initialize as array
 
@@ -157,26 +129,4 @@ const getAllDoctorsById = (doctorId: string | number) => {
       reject(error);
     }
   });
-};
-
-const handleGetAllDoctorsById = async (req: Request, res: Response) => {
-  try {
-    const doctorId = req.query.id as string | number;
-    const data = await getAllDoctorsById(doctorId);
-
-    // Ensure data is always an array, even if empty
-    const dataArray = Array.isArray(data) ? data : [data];
-
-    res.status(200).json({ data: dataArray });
-  } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-};
-
-export default { 
-  handleCreateDoctor, 
-  handleDeleteDoctor, 
-  handleEditDoctor, 
-  handleGetAllDoctorsById 
 };

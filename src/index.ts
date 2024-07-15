@@ -1,8 +1,7 @@
 import express, { Request, Response } from 'express';
 import { connectDB } from './configs/connectDB';
-import serviceRoutesUser from './containerAPIUser/service';
-import serviceRoutesDoctor from './containerAPIDoctor/service';
-
+import doctorRoutes from './routes/doctorRouter';
+import userRoutes from './routes/userRouter';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -30,8 +29,8 @@ app.use(function (req: Request, res: Response, next) {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-serviceRoutesUser(app);
-serviceRoutesDoctor(app);
+userRoutes(app);
+doctorRoutes(app);
 connectDB();
 
 app.listen(port, () => {

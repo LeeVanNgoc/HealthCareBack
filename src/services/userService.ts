@@ -1,57 +1,60 @@
-import { Request, Response } from 'express';
-import User from '../../models/user';
+import User from '../models/user';
 import bcrypt from 'bcryptjs';
 
 const salt = bcrypt.genSaltSync(10);
 
-let hashUserPassword = async (password: string) => {
+const hashUserPassword = async (password: string) => {
   try {
-    let hashPassword = await bcrypt.hash(password, salt);
+    const hashPassword = await bcrypt.hash(password, salt);
     return hashPassword;
   } catch (error) {
     throw new Error('Hashing failed');
   }
 }
 
-const createUser = async (data: any) => {
+const setDecentralization = async (role: string) => {
+  try {
+    if (role !== 'admin') {
+      role = 'user';
+    }
+    return role;
+  } catch (error) {
+    console.error('Error setting decentralization:', error);
+    throw error;
+  }
+}
+
+export const createUser = async (data: any) => {
+  return new Promise (async (resolve, reject) => {
+
   try {
     console.log('Received data:', data);
     const existingUser = await User.findOne({ where: { email: data.email } });
 
     if (existingUser) {
-      throw new Error('Email already exists');
+      reject('Email already exists');
     } else {
       const hashPassword = await hashUserPassword(data.password);
+      const role = await setDecentralization(data.role);
       const newUser = await User.create({
         email: data.email,
         firstName: data.firstName,
         lastName: data.lastName,
         address: data.address,
         password: hashPassword,
+        role: role,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
       return newUser;
     }
   } catch (error) {
-    console.error('Error creating user:', error);
-    throw error;
+    reject(error);
   }
+})
 };
 
-const handleCreateUser = async (req: Request, res: Response) => {
-  const data = req.body;
-
-  try {
-    const newUser = await createUser(data);
-    res.status(201).json({ message: 'User created successfully', user: newUser });
-  } catch (error) {
-    console.error('Error handling create user request:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-}
-
-const deleteUser = (userId : number) => {
+export const deleteUser = (userId : number) => {
   return new Promise (async (resolve, reject) => {
     try {
       const user = await User.findOne({
@@ -77,17 +80,7 @@ const deleteUser = (userId : number) => {
   })
 };
 
-const handleDeleteUser = async (req: Request, res: Response) => {
-  const userId = parseInt(req.query.id as string);
-  try {
-    await deleteUser(userId);
-  } catch (error) {
-    console.error('Error handling delete user request:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-}
-
-const editUser = async (data: any) => {
+export const editUser = async (data: any) => {
   return new Promise(async (resolve, reject) => {
     const id = data.id;
     try {
@@ -115,21 +108,7 @@ const editUser = async (data: any) => {
   });
 };
 
-const handleEditUser = async (req: Request, res: Response) => {
-  const data = req.body  ;
-  try {
-    const result: any = await editUser(data);
-    if (result.error) {
-      return res.status(404).json({ error: result.error });
-    }
-    res.status(200).json({ message: result.message, user: result.user });
-  } catch (error) {
-    console.error('Error handling edit user request:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-}
-
-const getAllUsersById = (userId: string | number) => {
+export const getAllUsersById = (userId: string | number) => {
   return new Promise(async (resolve, reject) => {
     let users: any = '';
     try {
@@ -153,20 +132,65 @@ const getAllUsersById = (userId: string | number) => {
   });
 };
 
-const handleGetAllUsersById = async (req: Request, res: Response) => {
+const checkUserEmail = async (userEmail: string): Promise<boolean> => {
   try {
-    const userId = req.query.id as string | number;
-    const data = await getAllUsersById(userId);
-    res.status(200).json({ data });
+    const user = await User.findOne({
+      where: { email: userEmail },
+    });
+    return !!user; 
   } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    throw error;
   }
 };
 
-export default { 
-  handleCreateUser,
-  handleDeleteUser,
-  handleEditUser,
-  handleGetAllUsersById
- };
+// Hàm đăng nhập
+export const loginAPI = async (userEmail: string, userPassword: string) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const userData: any = {};
+      const isExists = await checkUserEmail(userEmail);
+      
+      if (isExists) {
+        const user = await User.findOne({
+          attributes: ['email', 'password'],
+          where: { email: userEmail },
+          raw: true,
+        });
+        
+        if (user) {
+          const check = await bcrypt.compareSync(userPassword, user.password);
+          
+          if (check) {
+            // Xóa password để tránh bảo mật thông tin
+            delete userData.password;
+            userData.user = user;
+            resolve({
+              success: true,
+              user: userData.user,
+            });
+          } else {
+            resolve({
+              success: false,
+              message: 'Password is incorrect',
+            });
+          }
+        } else {
+          resolve({
+            success: false,
+            message: 'User not found', 
+          });
+        }
+      } else {
+        resolve({
+          success: false,
+          message: 'Your email does not exist in the system. Please try another email',
+        });
+      }
+    } catch (error) {
+      reject(error); 
+    }
+  });
+};
+
+
+

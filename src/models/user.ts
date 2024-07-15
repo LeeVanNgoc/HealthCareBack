@@ -39,6 +39,10 @@ User.init({
     type: DataTypes.STRING,
     allowNull: false,
   },
+  role: {
+    type: DataTypes.STRING,
+    defaultValue: 'user'
+  },
 }, {
   sequelize,
   tableName: 'users',
