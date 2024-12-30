@@ -15,7 +15,7 @@ class User extends Model {
 
 User.init({
   id: {
-    type: DataTypes.INTEGER.UNSIGNED,
+    type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true,
   },
@@ -39,9 +39,14 @@ User.init({
     type: DataTypes.STRING,
     allowNull: false,
   },
+  role: {
+    type: DataTypes.STRING,
+    defaultValue: 'user'
+  },
 }, {
   sequelize,
   tableName: 'users',
+  timestamps: false,
 });
 
 export default User;

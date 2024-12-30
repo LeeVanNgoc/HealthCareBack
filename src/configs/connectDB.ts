@@ -1,6 +1,6 @@
 import { Sequelize } from 'sequelize';
 
-const sequelize = new Sequelize('datawebdemo', 'root', '', {
+const sequelize = new Sequelize('healthycare', 'root', '', {
   host: 'localhost',
   dialect: 'mysql'
 });

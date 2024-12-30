@@ -1,6 +1,6 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Doctors', {
+    await queryInterface.createTable('Products', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -10,23 +10,29 @@ module.exports = {
       name: {
         type: Sequelize.STRING,
       },
-      email: {
+      title: {
+        type: Sequelize.TEXT,
+      },
+      size: {
         type: Sequelize.STRING,
       },
-      password: {
+      color: {
         type: Sequelize.STRING,
+      },
+      material: {
+        type: Sequelize.STRING,
+      },
+      quantity: {
+        type: Sequelize.INTEGER,
+      },
+      price: {
+        type: Sequelize.STRING,
+      },
+      supplier: {
+        type: Sequelize.TEXT,
       },
       image: {
         type: Sequelize.TEXT,
-      },
-      phonenumber: {
-        type: Sequelize.STRING,
-      },
-      address: {
-        type: Sequelize.STRING,
-      },
-      evuluate: {
-        type: Sequelize.INTEGER,
       },
       createdAt: {
         allowNull: false,
@@ -40,6 +46,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Doctors');
+    await queryInterface.dropTable('Products');
   }
 };

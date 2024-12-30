@@ -1,58 +1,67 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from '../configs/connectDB';
 
-class Doctor extends Model {
+class Product extends Model {
   public id!: number;
-  public email!: string;
-  public password!: string;
   public name!: string;
-  public address!: string;
-  public image!: Text;
-  public phonenumber!: string;
-  public evuluate!: number;
+  public title!: string;
+  public size!: string;
+  public color!: string;
+  public material!: string;
+  public quantity!: number;
+  public price!: string;
+  public supplier!: string;
+  public image!: string;  
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
 
-Doctor.init({
+Product.init({
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true,
-    allowNull: false,
   },
   name: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  email: {
+  title: {
+    type: DataTypes.TEXT,
+    allowNull: false,
+  },
+  size: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  password: {
+  color: {
     type: DataTypes.STRING,
+    allowNull: false,
+  },
+  material: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  quantity: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  price: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  supplier: {
+    type: DataTypes.TEXT,
     allowNull: false,
   },
   image: {
     type: DataTypes.TEXT,
     allowNull: false,
   },
-  phonenumber: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  address: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  evuluate: {
-    type: DataTypes.NUMBER,
-    allowNull: false,
-  },
 }, {
   sequelize,
-  tableName: 'Doctors',
+  tableName: 'Products',
 });
 
-export default Doctor;
+export default Product;
